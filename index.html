@@ -1,0 +1,470 @@
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rechnungsverwaltung</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+      <button class="tab-btn" data-tab="invoices">Rechnungen</button>
+      <button class="tab-btn" data-tab="customers">Kunden</button>
+      <button class="tab-btn" data-tab="items">Artikel</button>
+      <button class="tab-btn" data-tab="manufacturers">Hersteller</button>
+      <button class="tab-btn" data-tab="categories">Kategorien</button>
+      <button class="tab-btn" data-tab="settings">Einstellungen</button>
+    </div>
+
+    <div id="dashboard" class="tab-content active">
+      <h1 class="dashboard-title">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+        </svg>
+        Dashboard
+      </h1>
+      
+      <div class="dashboard-grid">
+        <div class="stats-card">
+          <div class="stats-title">Umsatz (30 Tage)</div>
+          <div class="stats-value" id="revenue-30-days">€0.00</div>
+          <div class="stats-chart" id="revenue-chart"></div>
+        </div>
+        
+        <div class="stats-card">
+          <div class="stats-title">Offene Rechnungen</div>
+          <div class="stats-value" id="open-invoices">0</div>
+          <div class="stats-amount" id="open-invoices-amount">€0.00</div>
+        </div>
+        
+        <div class="stats-card">
+          <div class="stats-title">Kunden</div>
+          <div class="stats-value" id="total-customers">0</div>
+          <div class="stats-subtitle">Aktive Kunden</div>
+        </div>
+        
+        <div class="stats-card">
+          <div class="stats-title">Lagerbestand</div>
+          <div class="stats-value" id="inventory-value">€0.00</div>
+          <div class="stats-subtitle">Gesamtwert</div>
+        </div>
+      </div>
+
+      <div class="dashboard-tables">
+        <div class="recent-section">
+          <h2>Letzte Rechnungen</h2>
+          <table id="recent-invoices-table">
+            <thead>
+              <tr>
+                <th>Nr.</th>
+                <th>Datum</th>
+                <th>Kunde</th>
+                <th>Betrag</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="recent-section">
+          <h2>Niedrige Lagerbestände</h2>
+          <table id="low-stock-table">
+            <thead>
+              <tr>
+                <th>Artikel</th>
+                <th>Bestand</th>
+                <th>Min. Bestand</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="invoices" class="tab-content">
+      <h1>Rechnungen</h1>
+      <button id="new-invoice-btn">Neue Rechnung</button>
+      <div id="invoice-list">
+        <h3>Bestehende Rechnungen</h3>
+        <table id="invoices-table">
+          <thead>
+            <tr>
+              <th>Rechnungsnr.</th>
+              <th>Datum</th>
+              <th>Kunde</th>
+              <th>Betrag</th>
+              <th>Aktionen</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div id="invoice-form" class="hidden">
+        <h2>Rechnung erstellen</h2>
+        <div class="invoice-header">
+          <div>
+            <label for="invoice-number">Rechnungsnummer:</label>
+            <input type="text" id="invoice-number" readonly>
+          </div>
+          <div>
+            <label for="invoice-date">Rechnungsdatum:</label>
+            <input type="date" id="invoice-date">
+          </div>
+        </div>
+
+        <div id="customer-details">
+          <h3>Kundendaten</h3>
+          <select id="customer-select">
+            <option value="">-- Kunde auswählen --</option>
+          </select>
+          <div class="customer-info">
+            <input type="text" id="customer-name" placeholder="Name" readonly>
+            <textarea id="customer-address" placeholder="Adresse" readonly></textarea>
+          </div>
+        </div>
+
+        <div id="item-section">
+          <h3>Positionen</h3>
+          <div class="item-add-controls">
+            <select id="item-select">
+              <option value="">-- Artikel auswählen --</option>
+            </select>
+            <button id="add-item">Hinzufügen</button>
+          </div>
+          <table id="items-table">
+            <thead>
+              <tr>
+                <th>Artikel</th>
+                <th>Menge</th>
+                <th>Preis (€)</th>
+                <th>Gesamt (€)</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="item-rows"></tbody>
+          </table>
+        </div>
+
+        <div id="totals">
+          <div class="total-row">
+            <label>Nettobetrag (ohne MwSt):</label>
+            <input type="text" id="subtotal" readonly>
+          </div>
+          <div class="total-row">
+            <label>MwSt. (%):</label>
+            <input type="number" id="vat" value="19">
+          </div>
+          <div class="total-row">
+            <label>MwSt. Betrag:</label>
+            <input type="text" id="vat-amount" readonly>
+          </div>
+          <div class="total-row">
+            <label>Gesamtbetrag (inkl. MwSt):</label>
+            <input type="text" id="total" readonly>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button id="save-invoice">Speichern</button>
+          <button id="cancel-invoice">Abbrechen</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="customers" class="tab-content">
+      <h1>Kundenverwaltung</h1>
+      <button id="add-customer-btn">Neuer Kunde</button>
+      <div id="customer-form" class="hidden">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="new-customer-firstname">Vorname:</label>
+            <input type="text" id="new-customer-firstname" required>
+          </div>
+          <div class="form-group">
+            <label for="new-customer-lastname">Name:</label>
+            <input type="text" id="new-customer-lastname" required>
+          </div>
+          <div class="form-group">
+            <label for="new-customer-company">Firma:</label>
+            <input type="text" id="new-customer-company">
+          </div>
+          <div class="form-group">
+            <label for="new-customer-country">Land:</label>
+            <input type="text" id="new-customer-country" required>
+          </div>
+          <div class="form-group">
+            <label for="new-customer-postal">PLZ:</label>
+            <input type="text" id="new-customer-postal" required>
+          </div>
+          <div class="form-group">
+            <label for="new-customer-city">Ort:</label>
+            <input type="text" id="new-customer-city" required>
+          </div>
+          <div class="form-group">
+            <label for="new-customer-street">Straße:</label>
+            <input type="text" id="new-customer-street" required>
+          </div>
+          <div class="form-group">
+            <label for="new-customer-stairs">Stiege:</label>
+            <input type="text" id="new-customer-stairs">
+          </div>
+          <div class="form-group">
+            <label for="new-customer-floor">Stock:</label>
+            <input type="text" id="new-customer-floor">
+          </div>
+          <div class="form-group">
+            <label for="new-customer-door">Tür:</label>
+            <input type="text" id="new-customer-door">
+          </div>
+          <div class="form-group">
+            <label for="new-customer-phone">Telefon:</label>
+            <input type="tel" id="new-customer-phone">
+          </div>
+          <div class="form-group">
+            <label for="new-customer-mobile">Mobil:</label>
+            <input type="tel" id="new-customer-mobile">
+          </div>
+          <div class="form-group">
+            <label for="new-customer-email">E-Mail:</label>
+            <input type="email" id="new-customer-email">
+          </div>
+          <div class="form-group">
+            <label for="new-customer-birthday">Geburtsdatum:</label>
+            <input type="date" id="new-customer-birthday">
+          </div>
+          <div class="form-group full-width">
+            <label for="new-customer-notes">Bemerkung:</label>
+            <textarea id="new-customer-notes"></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button id="save-customer">Speichern</button>
+          <button id="cancel-customer">Abbrechen</button>
+        </div>
+      </div>
+      <table id="customers-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Firma</th>
+            <th>Adresse</th>
+            <th>Kontakt</th>
+            <th>Aktionen</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="items" class="tab-content">
+      <h1>Artikelverwaltung</h1>
+      <button id="add-item-btn">Neuer Artikel</button>
+      <div id="item-form" class="hidden">
+        <div class="item-form-grid">
+          <div class="item-form-group">
+            <label for="new-item-article-number">Artikelnummer:</label>
+            <input type="text" id="new-item-article-number" readonly>
+          </div>
+          <div class="item-form-group">
+            <label for="new-item-name">Bezeichnung:</label>
+            <input type="text" id="new-item-name" required>
+          </div>
+          <div class="item-form-group">
+            <label for="new-item-manufacturer">Hersteller:</label>
+            <select id="new-item-manufacturer">
+              <option value="">-- Hersteller auswählen --</option>
+            </select>
+          </div>
+          <div class="item-form-group">
+            <label for="new-item-purchase-price">Preis Einkauf (€):</label>
+            <input type="number" id="new-item-purchase-price" step="0.01">
+          </div>
+          <div class="item-form-group">
+            <label for="new-item-price">Preis Verkauf (€):</label>
+            <input type="number" id="new-item-price" step="0.01" required>
+          </div>
+          <div class="item-form-group">
+            <label for="new-item-stock">Bestand:</label>
+            <input type="number" id="new-item-stock" min="0">
+          </div>
+          <div class="item-form-group full-width">
+            <label for="new-item-description">Beschreibung:</label>
+            <textarea id="new-item-description"></textarea>
+          </div>
+          <div class="item-form-group full-width">
+            <label for="item-image">Bild:</label>
+            <input type="file" id="item-image" accept="image/*">
+            <img id="item-image-preview" class="hidden" alt="Vorschau">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button id="save-item">Speichern</button>
+          <button id="cancel-item">Abbrechen</button>
+        </div>
+      </div>
+      <table id="items-table">
+        <thead>
+          <tr>
+            <th>Bild</th>
+            <th>Artikelnummer</th>
+            <th>Bezeichnung</th>
+            <th>Hersteller</th>
+            <th>Beschreibung</th>
+            <th>Preis Einkauf</th>
+            <th>Preis Verkauf</th>
+            <th>Bestand</th>
+            <th>Aktionen</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="manufacturers" class="tab-content">
+      <h1>Herstellerverwaltung</h1>
+      <button id="add-manufacturer-btn">Neuer Hersteller</button>
+      <div id="manufacturer-form" class="hidden">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="new-manufacturer-name">Name:</label>
+            <input type="text" id="new-manufacturer-name" required>
+          </div>
+          <div class="form-group">
+            <label for="new-manufacturer-contact">Ansprechpartner:</label>
+            <input type="text" id="new-manufacturer-contact">
+          </div>
+          <div class="form-group">
+            <label for="new-manufacturer-country">Land:</label>
+            <input type="text" id="new-manufacturer-country">
+          </div>
+          <div class="form-group">
+            <label for="new-manufacturer-postal">PLZ:</label>
+            <input type="text" id="new-manufacturer-postal">
+          </div>
+          <div class="form-group">
+            <label for="new-manufacturer-city">Ort:</label>
+            <input type="text" id="new-manufacturer-city">
+          </div>
+          <div class="form-group">
+            <label for="new-manufacturer-street">Straße:</label>
+            <input type="text" id="new-manufacturer-street">
+          </div>
+          <div class="form-group">
+            <label for="new-manufacturer-phone">Telefon:</label>
+            <input type="tel" id="new-manufacturer-phone">
+          </div>
+          <div class="form-group">
+            <label for="new-manufacturer-email">E-Mail:</label>
+            <input type="email" id="new-manufacturer-email">
+          </div>
+          <div class="form-group">
+            <label for="new-manufacturer-website">Website:</label>
+            <input type="url" id="new-manufacturer-website">
+          </div>
+          <div class="form-group full-width">
+            <label for="new-manufacturer-notes">Bemerkungen:</label>
+            <textarea id="new-manufacturer-notes"></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button id="save-manufacturer">Speichern</button>
+          <button id="cancel-manufacturer">Abbrechen</button>
+        </div>
+      </div>
+      <table id="manufacturers-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Ansprechpartner</th>
+            <th>Adresse</th>
+            <th>Kontakt</th>
+            <th>Aktionen</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="categories" class="tab-content">
+      <h1>Kategorieverwaltung</h1>
+      <button id="add-category-btn">Neue Kategorie</button>
+      
+      <div id="category-form" class="hidden">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="new-category-name">Name:</label>
+            <input type="text" id="new-category-name" required>
+          </div>
+          <div class="form-group full-width">
+            <label for="new-category-description">Beschreibung:</label>
+            <textarea id="new-category-description"></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button id="save-category">Speichern</button>
+          <button id="cancel-category">Abbrechen</button>
+        </div>
+      </div>
+
+      <table id="categories-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Beschreibung</th>
+            <th>Aktionen</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="settings" class="tab-content">
+      <h1>Einstellungen</h1>
+      <h2>Firmendaten</h2>
+      <div id="company-form">
+        <label for="company-name">Firmenname:</label>
+        <input type="text" id="company-name">
+        
+        <label for="company-address">Adresse:</label>
+        <textarea id="company-address"></textarea>
+        
+        <label for="company-contact">Kontakt:</label>
+        <input type="text" id="company-contact">
+        
+        <label for="company-tax-id">Steuernummer:</label>
+        <input type="text" id="company-tax-id">
+        
+        <label for="company-phone">Telefon:</label>
+        <input type="text" id="company-phone">
+        
+        <label for="company-email">E-Mail:</label>
+        <input type="email" id="company-email">
+        
+        <div class="form-actions">
+          <button id="save-company-data">Speichern</button>
+        </div>
+      </div>
+
+      <h2>Mehrwertsteuer-Einstellungen</h2>
+      <div id="vat-settings">
+        <div class="vat-rates">
+          <label for="default-vat">Standard-MwSt (%):</label>
+          <input type="number" id="default-vat" min="0" max="100" step="0.1">
+          
+          <label for="reduced-vat">Ermäßigter MwSt-Satz (%):</label>
+          <input type="number" id="reduced-vat" min="0" max="100" step="0.1">
+        </div>
+        <div class="form-actions">
+          <button id="save-vat-settings">MwSt-Einstellungen speichern</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
